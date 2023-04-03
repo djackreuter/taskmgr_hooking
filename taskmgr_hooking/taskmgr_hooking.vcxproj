@@ -130,7 +130,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>C:\libs\Detours\lib.X64</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)\Detours\lib.X64</AdditionalLibraryDirectories>
       <AdditionalDependencies>detours.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -152,7 +152,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>C:\libs\Detours\lib.X64</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)\Detours\lib.X64</AdditionalLibraryDirectories>
       <AdditionalDependencies>detours.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
